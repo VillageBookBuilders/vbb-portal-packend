@@ -11,7 +11,7 @@ class UserAdmin(auth_admin.UserAdmin):
 
     fieldsets = (
         (None, {"fields": ["password"]}),
-        (_("Personal info"), {"fields": ("name", "email", "first_name","last_name", "profileImage", "role","is_student", "is_mentor", "is_librarian")}),
+        (_("Personal info"), {"fields": ("name", "email", "first_name", "last_name", "profileImage", "role","is_student", "is_mentor", "is_librarian")}),
         (
             _("Permissions"),
             {
@@ -26,5 +26,21 @@ class UserAdmin(auth_admin.UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-    list_display = ["username", "email", "first_name", "last_name","is_superuser"]
+    list_display = ["username", "email", "first_name", "last_name", "is_superuser"]
     search_fields = ["first_name", "last_name"]
+
+
+
+
+    # Custom admin action
+    @admin.action(description="Update missing usernames")
+    def update_missing_usernames(self, request, queryset):
+        for user in queryset:
+            if not user.username:  # Check if the username is missing
+                user.username = f"{user.first_name}{user.last_name}".replace(" ", "")
+                user.save()
+        self.message_user(request, "Usernames updated successfully.")
+
+    # Register the custom action
+    actions = ["update_missing_usernames"]
+
